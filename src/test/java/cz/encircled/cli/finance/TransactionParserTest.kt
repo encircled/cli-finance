@@ -1,6 +1,7 @@
 package cz.encircled.cli.finance
 
 import cz.encircled.cli.finance.model.TransactionEntry
+import cz.encircled.cli.finance.parser.DefaultCategoryMatcher
 import cz.encircled.cli.finance.parser.FioCsvParser
 import cz.encircled.cli.finance.parser.TransactionsDataParser
 import kotlinx.coroutines.runBlocking
@@ -14,7 +15,7 @@ import kotlin.test.assertEquals
  */
 class TransactionParserTest {
 
-    private val parser: TransactionsDataParser = FioCsvParser()
+    private val parser: TransactionsDataParser = FioCsvParser(DefaultCategoryMatcher())
 
     @Test
     fun testParseFile() {
@@ -33,9 +34,11 @@ class TransactionParserTest {
     @Test
     fun testParseSingleTransaction() {
         runBlocking {
-            val entry = parser.parseTransactionEntry("\"123\";\"04.07.2018\";\"-6200\";\"CZK\";\"101010188\";\"\";\"0300\";\"ČSOB, a.s.\";\"0558\";\"\";\"\";\"csob\";\"\";\"Bezhotovostní platba\";\"\";\"\";\"csob\";\"\";\"1234567\"")
+            val entry = parser.parseTransactionEntry("\"123\";\"04.07.2018\";\"-6200\";\"CZK\";\"101010188\";\"\";\"0300\";\"ČSOB, a.s.\";\"0558\";\"777010\";\"\";\"customPoplatky\";\"poplatky\";\"Bezhotovostní platba\";\"\";\"\";\"\";\"\";\"1234567\"")
             assertEquals("123", entry.id)
             assertEquals("101010188", entry.sourceAccount)
+            assertEquals("poplatky", entry.transactionNote)
+            assertEquals("customPoplatky", entry.customNote)
             assertEquals(BigDecimal(-6200), entry.amount)
             assertEquals(LocalDate.of(2018, 7, 4), entry.transactionDate)
         }

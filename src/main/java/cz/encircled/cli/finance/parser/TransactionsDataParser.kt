@@ -18,7 +18,7 @@ interface TransactionsDataParser {
 
 }
 
-class FioCsvParser : TransactionsDataParser {
+class FioCsvParser(private val categoryMatcher: CategoryMatcher) : TransactionsDataParser {
 
     private val dataBegin = 13
 
@@ -45,7 +45,10 @@ class FioCsvParser : TransactionsDataParser {
     override suspend fun parseTransactionEntry(source: String): TransactionEntry {
         val split = source.replace("\"", "").split(";")
 
-        return TransactionEntry(split[0], getNumber(split[2]), split[4], getDate(split[1]))
+        val entry = TransactionEntry(split[0], getNumber(split[2]), split[4], getDate(split[1]), split[12], split[11])
+        entry.category = categoryMatcher.getCategory(entry)
+
+        return entry
     }
 
     private fun getNumber(source: String): BigDecimal {
